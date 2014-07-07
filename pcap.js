@@ -1048,6 +1048,9 @@ decode.dns = function (raw_packet, offset) {
     internal_offset = offset + 12;
 
     ret.question = [];
+    if(ret.header.qdcount > 100) {
+        throw new Error("Malformed DNS record. Too many questions.");
+    }
     for (i = 0; i < ret.header.qdcount ; i += 1) {
         ret.question[i] = {};
         question_done = false;
@@ -1075,13 +1078,13 @@ decode.dns = function (raw_packet, offset) {
     internal_offset = dns_util.decodeRRs(raw_packet, offset, internal_offset, ret.header.ancount, ret.answer);
 
     ret.authority = [];
-    if(ret.header.ancount > 100) {
+    if(ret.header.nscount > 100) {
         throw new Error("Malformed DNS record. Too many authorities.");
     }
     internal_offset = dns_util.decodeRRs(raw_packet, offset, internal_offset, ret.header.nscount, ret.authority);
 
     ret.additional = [];
-    if(ret.header.ancount > 100) {
+    if(ret.header.arcount > 100) {
         throw new Error("Malformed DNS record. Too many additional.");
     }
     internal_offset = dns_util.decodeRRs(raw_packet, offset, internal_offset, ret.header.arcount, ret.additional);
